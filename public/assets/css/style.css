@@ -1,0 +1,263 @@
+/* ==========================================================================
+   Mobile Money — feuille de style de l'application
+   Chargée APRES bootstrap.min.css afin de pouvoir surcharger ses composants.
+   ========================================================================== */
+
+:root {
+    /* Palette de base */
+    --mm-bleu-clair: #8EB9FC;
+    --mm-bleu:       #274DEA;
+    --mm-vert-clair: #EBFFDC;
+    --mm-jaune:      #FFF197;
+    --mm-rouge:      #FF513D;
+
+    /* Variantes assombries : necessaires quand du texte blanc doit rester
+       lisible par-dessus (voir la note sur les contrastes plus bas). */
+    --mm-bleu-fonce:  #1C38AC;
+    --mm-rouge-fonce: #C9301F;
+
+    /* Neutres */
+    --mm-texte:       #16213E;
+    --mm-texte-doux:  #5A6484;
+    --mm-fond:        #F7F9FF;
+    --mm-bordure:     #DFE6F7;
+
+    --mm-rayon: .75rem;
+    --mm-ombre: 0 2px 12px rgba(39, 77, 234, .08);
+}
+
+/* Alignement des variables Bootstrap sur la palette : les composants qui
+   lisent ces variables (liens, focus, pagination...) suivent automatiquement. */
+:root {
+    --bs-primary:     var(--mm-bleu);
+    --bs-primary-rgb: 39, 77, 234;
+    --bs-danger:      var(--mm-rouge);
+    --bs-danger-rgb:  255, 81, 61;
+    --bs-body-color:  var(--mm-texte);
+    --bs-body-bg:     var(--mm-fond);
+    --bs-link-color:  var(--mm-bleu);
+    --bs-link-hover-color: var(--mm-bleu-fonce);
+    --bs-border-color: var(--mm-bordure);
+}
+
+body {
+    background-color: var(--mm-fond);
+    color: var(--mm-texte);
+}
+
+/* ---------- Barre de navigation ---------------------------------------- */
+
+.navbar.bg-dark {
+    background-color: var(--mm-bleu) !important;
+    box-shadow: var(--mm-ombre);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, .85);
+    border-radius: .5rem;
+    padding-inline: .75rem;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link:focus {
+    color: #fff;
+    background-color: rgba(255, 255, 255, .12);
+}
+
+/* Page courante : a poser avec class="nav-link active" sur l'onglet actif */
+.navbar-dark .navbar-nav .nav-link.active {
+    color: var(--mm-bleu);
+    background-color: var(--mm-jaune);
+    font-weight: 600;
+}
+
+/* ---------- Cartes ------------------------------------------------------ */
+
+.card {
+    border: 1px solid var(--mm-bordure);
+    border-radius: var(--mm-rayon);
+    box-shadow: var(--mm-ombre);
+}
+
+/* Carte du solde (accueil) */
+.card.text-bg-primary {
+    background: linear-gradient(135deg, var(--mm-bleu) 0%, var(--mm-bleu-fonce) 100%) !important;
+    color: #fff !important;
+    border: none;
+}
+
+/* Bandeau de rappel du solde sur les pages d'operation */
+.mm-solde {
+    background-color: var(--mm-vert-clair);
+    border: 1px solid #C9E9AE;
+    border-radius: var(--mm-rayon);
+    padding: 1rem 1.25rem;
+}
+
+.mm-montant {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+
+/* ---------- Boutons ----------------------------------------------------- */
+
+.btn {
+    border-radius: .625rem;
+    font-weight: 500;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--mm-bleu);
+    --bs-btn-border-color: var(--mm-bleu);
+    --bs-btn-hover-bg: var(--mm-bleu-fonce);
+    --bs-btn-hover-border-color: var(--mm-bleu-fonce);
+    --bs-btn-active-bg: var(--mm-bleu-fonce);
+    --bs-btn-active-border-color: var(--mm-bleu-fonce);
+    --bs-btn-disabled-bg: var(--mm-bleu-clair);
+    --bs-btn-disabled-border-color: var(--mm-bleu-clair);
+}
+
+.btn-danger {
+    --bs-btn-bg: var(--mm-rouge-fonce);
+    --bs-btn-border-color: var(--mm-rouge-fonce);
+    --bs-btn-hover-bg: #A82616;
+    --bs-btn-hover-border-color: #A82616;
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--mm-bleu);
+    --bs-btn-border-color: var(--mm-bleu-clair);
+    --bs-btn-hover-bg: var(--mm-bleu);
+    --bs-btn-hover-border-color: var(--mm-bleu);
+}
+
+/* ---------- Formulaires ------------------------------------------------- */
+
+.form-label {
+    font-weight: 600;
+    color: var(--mm-texte-doux);
+}
+
+.form-control,
+.form-select {
+    border-color: var(--mm-bordure);
+    border-radius: .625rem;
+    padding: .625rem .875rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--mm-bleu-clair);
+    box-shadow: 0 0 0 .2rem rgba(142, 185, 252, .45);
+}
+
+/* Champ de saisie d'un montant : chiffres alignes et lisibles */
+.mm-input-montant {
+    font-size: 1.35rem;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+/* ---------- Alertes ----------------------------------------------------- */
+
+.alert {
+    border-radius: var(--mm-rayon);
+    border-width: 0 0 0 4px;
+}
+
+.alert-success {
+    background-color: var(--mm-vert-clair);
+    border-left-color: #5BA82F;
+    color: #2F5C15;
+}
+
+.alert-warning {
+    background-color: var(--mm-jaune);
+    border-left-color: #D4AF00;
+    color: #5C4A00;
+}
+
+.alert-danger {
+    background-color: #FFE7E4;
+    border-left-color: var(--mm-rouge);
+    color: #8C1D0F;
+}
+
+.alert-info {
+    background-color: #E8F0FF;
+    border-left-color: var(--mm-bleu);
+    color: var(--mm-bleu-fonce);
+}
+
+/* ---------- Tableaux (historique, comptes, baremes) --------------------- */
+
+.table {
+    --bs-table-border-color: var(--mm-bordure);
+    background-color: #fff;
+    border-radius: var(--mm-rayon);
+    overflow: hidden;
+}
+
+.table > thead {
+    background-color: var(--mm-vert-clair);
+}
+
+.table > thead th {
+    color: var(--mm-texte);
+    font-weight: 600;
+    border-bottom: 2px solid var(--mm-bordure);
+}
+
+.table > tbody tr:hover {
+    background-color: #F2F6FF;
+}
+
+/* Colonnes de montants : a poser avec class="mm-col-montant" sur th/td */
+.mm-col-montant {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* ---------- Etiquettes de type d'operation ------------------------------ */
+
+.mm-badge {
+    display: inline-block;
+    padding: .25rem .625rem;
+    border-radius: 999px;
+    font-size: .8125rem;
+    font-weight: 600;
+}
+
+.mm-badge-depot     { background-color: var(--mm-vert-clair); color: #2F5C15; }
+.mm-badge-retrait   { background-color: var(--mm-jaune);      color: #5C4A00; }
+.mm-badge-transfert { background-color: var(--mm-bleu-clair); color: var(--mm-bleu-fonce); }
+
+/* Sens du mouvement sur le solde */
+.mm-credit { color: #2F5C15; font-weight: 600; }
+.mm-debit  { color: var(--mm-rouge-fonce); font-weight: 600; }
+
+/* ---------- Page de connexion ------------------------------------------- */
+
+.mm-login {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, var(--mm-bleu-clair) 0%, var(--mm-bleu) 100%);
+    padding: 1.5rem;
+}
+
+.mm-login-card {
+    width: 100%;
+    max-width: 26rem;
+    background: #fff;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 12px 40px rgba(28, 56, 172, .25);
+}
