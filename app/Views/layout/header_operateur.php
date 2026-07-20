@@ -35,6 +35,10 @@
                     <a class="nav-link" href="<?= site_url('operateur/comptes') ?>">Comptes clients</a>
                 </li>
             </ul>
+
+            <a class="btn btn-outline-light btn-sm" href="<?= site_url('operateur/deconnexion') ?>">
+                <i class="bi bi-box-arrow-right me-1"></i> Déconnexion
+            </a>
         </div>
     </div>
 </nav>

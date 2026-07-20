@@ -7,19 +7,19 @@
 
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-lg-4">
-        <div class="mm-stat mm-stat-principal">
+        <div class="mm-stat mm-stat-principal h-100">
             <div class="mm-stat-label"><i class="bi bi-wallet2 me-1"></i> Solde disponible</div>
             <div class="mm-stat-valeur"><?= number_format($compte['solde'], 0, ',', ' ') ?> Ar</div>
         </div>
     </div>
     <div class="col-sm-6 col-lg-4">
-        <div class="mm-stat">
+        <div class="mm-stat h-100">
             <div class="mm-stat-label"><i class="bi bi-arrow-left-right me-1"></i> Transactions</div>
             <div class="mm-stat-valeur"><?= $nbTransactions ?></div>
         </div>
     </div>
     <div class="col-sm-6 col-lg-4">
-        <div class="mm-stat">
+        <div class="mm-stat h-100">
             <div class="mm-stat-label"><i class="bi bi-percent me-1"></i> Frais payés</div>
             <div class="mm-stat-valeur"><?= number_format($fraisPayes, 0, ',', ' ') ?> Ar</div>
         </div>

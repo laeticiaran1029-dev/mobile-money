@@ -15,3 +15,4 @@ SQLite, fichier `writable/mobileMoney.db`, à créer depuis `base.sql` :
 ```
 sqlite3 writable/mobileMoney.db < base.sql
 ```
+### mdp operateur :admin2024

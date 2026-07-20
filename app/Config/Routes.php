@@ -6,15 +6,27 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 $routes->get('/', 'Home::index');
+$routes->post('connexion', 'ClientAuthController::connexion');
+$routes->get('logout', 'ClientAuthController::deconnexion');
+
 $routes->get('accueil', 'Accueil::index');
 
 $routes->get('depot', 'OperationController::depot');
+$routes->post('depot', 'OperationController::effectuerDepot');
 $routes->get('retrait', 'OperationController::retrait');
+$routes->post('retrait', 'OperationController::effectuerRetrait');
 $routes->get('transfert', 'OperationController::transfert');
+$routes->post('transfert', 'OperationController::effectuerTransfert');
 $routes->get('historique', 'OperationController::historique');
 
-// ------------------------------------------------------------ Cote operateur
-$routes->group('operateur', static function ($routes) {
+
+
+$routes->get('operateur/connexion', 'OperateurAuthController::connexion');
+$routes->post('operateur/connexion', 'OperateurAuthController::traiter');
+$routes->get('operateur/deconnexion', 'OperateurAuthController::deconnexion');
+
+
+$routes->group('operateur', ['filter' => 'operateur'], static function ($routes) {
     $routes->get('/', 'OperateurController::index');
 
     $routes->get('prefixes', 'OperateurController::prefixes');
@@ -30,10 +42,10 @@ $routes->group('operateur', static function ($routes) {
     $routes->get('comptes', 'OperateurController::comptes');
 });
 
-$routes->get('faketest', static function () {
-    session()->set('idCompte', 1);
-    return redirect()->to('accueil');
-});
+// $routes->get('faketest', static function () {
+//     session()->set('idCompte', 1);
+//     return redirect()->to('accueil');
+// });
 
 
 

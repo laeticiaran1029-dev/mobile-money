@@ -1,5 +1,13 @@
-.mobileMoney
+
+
 PRAGMA foreign_keys = ON;
+
+DROP TABLE IF EXISTS historique_operation;
+DROP TABLE IF EXISTS frais;
+DROP TABLE IF EXISTS comptes;
+DROP TABLE IF EXISTS operation;
+DROP TABLE IF EXISTS prefixes;
+
 
 
 CREATE TABLE prefixes (
@@ -7,7 +15,6 @@ CREATE TABLE prefixes (
     valeur VARCHAR(10) NOT NULL UNIQUE,
     statut INTEGER DEFAULT 1 CHECK (statut IN (0, 1))
 );
-
 
 CREATE TABLE comptes (
     idCompte INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,23 +53,28 @@ CREATE TABLE historique_operation (
 );
 
 
-INSERT INTO prefixes (valeur, statut) VALUES 
-('033', 1),
-('037', 1),
-('035', 1),
-('038', 1),
+INSERT INTO prefixes (valeur, statut) VALUES
 ('032', 1),
-('034', 1); -- Exemple de préfixe désactivé
+('033', 1),
+('034', 1),
+('035', 1),
+('037', 1),
+('038', 1);
 
--- Création des 3 types d'opérations
 
 INSERT INTO operation (type) VALUES
-('depot'),
-('retrait'),
-('transfert');
+('depot'),      
+('retrait'),    
+('transfert'); 
 
--- Barèmes de frais (Exemple du sujet pour le Retrait - idOperation = 2)
-INSERT INTO frais (idOperation, montantMin, montantMax, frais) VALUES 
+
+INSERT INTO comptes (numeroTel, solde, nom, prenom) VALUES
+('0331000001', 150000.0, 'Rakoto', 'Jean'),     
+('0372000002', 50000.0, 'Rasoa', 'Marie'),       
+('0333000003', 2500000.0, 'Randria', 'Paul');    
+
+
+INSERT INTO frais (idOperation, montantMin, montantMax, frais) VALUES
 (2, 100, 1000, 50),
 (2, 1001, 5000, 50),
 (2, 5001, 10000, 100),
@@ -74,8 +86,8 @@ INSERT INTO frais (idOperation, montantMin, montantMax, frais) VALUES
 (2, 500001, 1000000, 2500),
 (2, 1000001, 2000000, 3000);
 
--- Barèmes de frais (Pour le Transfert - idOperation = 3, exemple de test)
-INSERT INTO frais (idOperation, montantMin, montantMax, frais) VALUES 
+
+INSERT INTO frais (idOperation, montantMin, montantMax, frais) VALUES
 (3, 100, 1000, 20),
 (3, 1001, 5000, 50),
 (3, 5001, 10000, 100),
@@ -83,21 +95,14 @@ INSERT INTO frais (idOperation, montantMin, montantMax, frais) VALUES
 (3, 50001, 100000, 500),
 (3, 100001, 1000000, 1000);
 
--- Insertion de comptes clients pour tester tout de suite l'application
-INSERT INTO comptes (numeroTel, solde, nom, prenom) VALUES 
-('0331000001', 150000.0, 'Rakoto', 'Jean'),
-('0372000002', 50000.0, 'Rasoa', 'Marie'),
-('0333000003', 2500000.0, 'Randria', 'Paul');
 
--- Simulation d'un historique initial (Pour tester les vues de gains de l'opérateur)
--- 1. Un dépôt de 100 000 Ar sur le compte 1 (Frais : 0)
-INSERT INTO historique_operation (idCompte, idCompteDestinataire, idOperation, montant, fraisTotal) 
+INSERT INTO historique_operation (idCompte, idCompteDestinataire, idOperation, montant, fraisTotal)
 VALUES (1, NULL, 1, 100000, 0);
 
--- 2. Un retrait de 15 000 Ar par le compte 1 (Frais : 200 Ar d'après le barème)
-INSERT INTO historique_operation (idCompte, idCompteDestinataire, idOperation, montant, fraisTotal) 
+
+INSERT INTO historique_operation (idCompte, idCompteDestinataire, idOperation, montant, fraisTotal)
 VALUES (1, NULL, 2, 15000, 200);
 
--- 3. Un transfert de 10 000 Ar du compte 3 vers le compte 2 (Frais : 100 Ar d'après le barème)
-INSERT INTO historique_operation (idCompte, idCompteDestinataire, idOperation, montant, fraisTotal) 
+
+INSERT INTO historique_operation (idCompte, idCompteDestinataire, idOperation, montant, fraisTotal)
 VALUES (3, 2, 3, 10000, 100);

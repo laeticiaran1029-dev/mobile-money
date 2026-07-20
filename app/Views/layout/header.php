@@ -42,3 +42,18 @@
 </nav>
 
 <div class="container">
+
+    <?php if (session()->getFlashdata('succes')) : ?>
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle me-1"></i>
+            <?= esc(session()->getFlashdata('succes')) ?>
+        </div>
+    <?php endif ?>
+
+    <?php if (session()->getFlashdata('erreur')) : ?>
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            <?= esc(session()->getFlashdata('erreur')) ?>
+        </div>
+    <?php endif ?>
+

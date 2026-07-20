@@ -631,8 +631,10 @@ body {
     color: var(--mm-bleu-fonce);
 }
 
+/* Pas de height:100% ici : la carte serait etiree a la hauteur de sa
+   colonne des qu'elle en partage une avec d'autres elements. Pour aligner
+   plusieurs cartes sur une meme ligne, ajouter la classe h-100. */
 .mm-stat {
-    height: 100%;
     background: #fff;
     border: 1px solid var(--mm-bordure);
     border-radius: var(--mm-rayon);
@@ -661,6 +663,43 @@ body {
 
 .mm-stat-principal .mm-stat-label {
     color: rgba(255, 255, 255, .78);
+}
+
+/* Bareme repliable sous les formulaires de retrait et de transfert. */
+.mm-bareme {
+    background: #fff;
+    border: 1px solid var(--mm-bordure);
+    border-radius: var(--mm-rayon);
+    padding: .875rem 1.125rem;
+}
+
+.mm-bareme summary {
+    cursor: pointer;
+    font-size: .875rem;
+    font-weight: 600;
+    color: var(--mm-bleu);
+    list-style: none;
+}
+
+.mm-bareme summary::-webkit-details-marker {
+    display: none;
+}
+
+.mm-bareme summary::after {
+    content: " ▾";
+}
+
+.mm-bareme[open] summary::after {
+    content: " ▴";
+}
+
+.mm-bareme .table {
+    box-shadow: none;
+}
+
+.mm-col-tranche {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
 .mm-badge-inactif {
