@@ -242,6 +242,432 @@ body {
 .mm-credit { color: #2F5C15; font-weight: 600; }
 .mm-debit  { color: var(--mm-rouge-fonce); font-weight: 600; }
 
+/* ---------- Accueil : carte du solde ------------------------------------ */
+
+.mm-titre-section {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--mm-texte-doux);
+    margin-bottom: 1rem;
+}
+
+.mm-carte-solde {
+    background: linear-gradient(135deg, var(--mm-bleu) 0%, var(--mm-bleu-fonce) 100%);
+    color: #fff;
+    border-radius: 1rem;
+    padding: 1.75rem;
+    box-shadow: 0 8px 28px rgba(28, 56, 172, .28);
+    display: flex;
+    flex-direction: column;
+}
+
+.mm-carte-solde-label {
+    font-size: .875rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: rgba(255, 255, 255, .75);
+}
+
+.mm-carte-solde-valeur {
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+    margin-top: .35rem;
+}
+
+/* L'unite reste lisible sans concurrencer le montant lui-meme. */
+.mm-carte-solde-valeur span {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, .8);
+}
+
+.mm-carte-solde-pied {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, .2);
+}
+
+.mm-carte-solde-tel {
+    font-size: .875rem;
+    color: rgba(255, 255, 255, .75);
+    font-variant-numeric: tabular-nums;
+}
+
+.mm-avatar {
+    flex: 0 0 auto;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, .18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+/* ---------- Accueil : tuiles d'action ----------------------------------- */
+
+.mm-action {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 1.25rem;
+    background: #fff;
+    border: 1px solid var(--mm-bordure);
+    border-left: 4px solid var(--mm-bleu-clair);
+    border-radius: var(--mm-rayon);
+    text-decoration: none;
+    color: var(--mm-texte);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.mm-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(39, 77, 234, .14);
+    color: var(--mm-texte);
+}
+
+/* Le focus clavier doit rester visible : accessibilite. */
+.mm-action:focus-visible {
+    outline: 3px solid var(--mm-bleu);
+    outline-offset: 2px;
+}
+
+.mm-action-icone {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: .625rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: .75rem;
+}
+
+.mm-action-titre {
+    font-weight: 600;
+    font-size: 1.0625rem;
+}
+
+.mm-action-aide {
+    font-size: .8125rem;
+    color: var(--mm-texte-doux);
+}
+
+/* Chaque operation garde la meme couleur dans toute l'application
+   (tuiles ici, etiquettes .mm-badge dans l'historique). */
+.mm-action-depot      { border-left-color: #7CC24A; }
+.mm-action-depot      .mm-action-icone { background-color: var(--mm-vert-clair); color: #2F5C15; }
+
+.mm-action-retrait    { border-left-color: #E2C200; }
+.mm-action-retrait    .mm-action-icone { background-color: var(--mm-jaune); color: #5C4A00; }
+
+.mm-action-transfert  { border-left-color: var(--mm-bleu); }
+.mm-action-transfert  .mm-action-icone { background-color: var(--mm-bleu-clair); color: var(--mm-bleu-fonce); }
+
+.mm-action-historique { border-left-color: var(--mm-texte-doux); }
+.mm-action-historique .mm-action-icone { background-color: #EEF1F8; color: var(--mm-texte-doux); }
+
+/* ---------- Accueil client : mise en page facon application mobile ------- */
+
+/* Colonne centree et etroite : la lecture reste confortable sur grand ecran
+   et la page est directement utilisable au telephone. */
+.mm-app {
+    max-width: 34rem;
+    margin-inline: auto;
+}
+
+/* Bloc du solde */
+.mm-solde-bloc {
+    text-align: center;
+    padding: 1.5rem 1rem 2rem;
+}
+
+.mm-compte-pastille {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .375rem .875rem;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid var(--mm-bordure);
+    font-size: .875rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--mm-texte-doux);
+}
+
+.mm-compte-puce {
+    width: 1.5rem;
+    height: 1rem;
+    border-radius: .1875rem;
+    background: linear-gradient(135deg, var(--mm-bleu-clair), var(--mm-bleu));
+}
+
+.mm-solde-label {
+    margin-top: 1.25rem;
+    font-size: .875rem;
+    color: var(--mm-texte-doux);
+}
+
+.mm-solde-valeur {
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--mm-texte);
+    margin-top: .25rem;
+}
+
+.mm-solde-valeur span {
+    font-size: 1.375rem;
+    font-weight: 500;
+    color: var(--mm-texte-doux);
+}
+
+.mm-solde-titulaire {
+    margin-top: .5rem;
+    font-size: .875rem;
+    color: var(--mm-texte-doux);
+}
+
+/* Rangee d'actions rondes */
+.mm-actions {
+    display: flex;
+    justify-content: center;
+    gap: .5rem;
+    margin-bottom: 2rem;
+}
+
+.mm-action-ronde {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+    padding: .75rem .25rem;
+    border-radius: var(--mm-rayon);
+    text-decoration: none;
+    color: var(--mm-texte);
+    transition: background-color .15s ease;
+}
+
+.mm-action-ronde:hover {
+    background-color: #EDF2FF;
+    color: var(--mm-texte);
+}
+
+.mm-action-ronde:focus-visible {
+    outline: 3px solid var(--mm-bleu);
+    outline-offset: 2px;
+}
+
+.mm-rond {
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid var(--mm-bordure);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    color: var(--mm-bleu);
+    box-shadow: var(--mm-ombre);
+}
+
+/* L'action la plus courante est mise en avant (comme "Send" sur la maquette). */
+.mm-rond-primaire {
+    background: var(--mm-bleu);
+    border-color: var(--mm-bleu);
+    color: #fff;
+}
+
+.mm-rond-label {
+    font-size: .8125rem;
+    font-weight: 500;
+}
+
+/* Liste de transactions */
+.mm-bloc-liste {
+    background: #fff;
+    border: 1px solid var(--mm-bordure);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    box-shadow: var(--mm-ombre);
+}
+
+.mm-liste-entete {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: .75rem;
+}
+
+.mm-liste-titre {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.mm-lien-tout {
+    font-size: .875rem;
+    text-decoration: none;
+    color: var(--mm-bleu);
+}
+
+.mm-liste-vide {
+    color: var(--mm-texte-doux);
+    margin: 0;
+    padding: 1rem 0;
+}
+
+.mm-liste {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.mm-ligne {
+    display: flex;
+    align-items: center;
+    gap: .875rem;
+    padding: .75rem 0;
+    border-top: 1px solid var(--mm-bordure);
+}
+
+.mm-ligne:first-child {
+    border-top: none;
+}
+
+.mm-pastille {
+    flex: 0 0 auto;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: .9375rem;
+}
+
+/* Meme code couleur que les .mm-badge et les tuiles : une operation garde
+   sa couleur partout dans l'application. */
+.mm-pastille-depot     { background-color: var(--mm-vert-clair); color: #2F5C15; }
+.mm-pastille-retrait   { background-color: var(--mm-jaune);      color: #5C4A00; }
+.mm-pastille-transfert { background-color: var(--mm-bleu-clair); color: var(--mm-bleu-fonce); }
+
+.mm-ligne-corps {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.mm-ligne-titre {
+    font-weight: 600;
+    font-size: .9375rem;
+    font-variant-numeric: tabular-nums;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mm-ligne-meta {
+    font-size: .8125rem;
+    color: var(--mm-texte-doux);
+}
+
+.mm-ligne-fin {
+    flex: 0 0 auto;
+    text-align: right;
+}
+
+.mm-ligne-montant {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+    .mm-solde-valeur { font-size: 2.25rem; }
+    .mm-rond         { width: 2.875rem; height: 2.875rem; }
+    .mm-rond-label   { font-size: .75rem; }
+}
+
+/* ---------- Espace operateur -------------------------------------------- */
+
+/* Navigation volontairement distincte du cote client : l'operateur doit voir
+   d'un coup d'oeil qu'il n'est pas dans l'espace d'un abonne. */
+.mm-nav-operateur {
+    background-color: var(--mm-texte);
+    box-shadow: var(--mm-ombre);
+}
+
+.mm-etiquette-operateur,
+.mm-etiquette-client {
+    display: inline-block;
+    margin-left: .5rem;
+    padding: .125rem .5rem;
+    border-radius: 999px;
+    font-size: .75rem;
+    font-weight: 700;
+    vertical-align: middle;
+}
+
+/* Les deux espaces partagent la meme navbar : seule l'etiquette les
+   distingue, d'ou deux couleurs franchement differentes. */
+.mm-etiquette-operateur {
+    background-color: var(--mm-jaune);
+    color: #5C4A00;
+}
+
+.mm-etiquette-client {
+    background-color: var(--mm-bleu-clair);
+    color: var(--mm-bleu-fonce);
+}
+
+.mm-stat {
+    height: 100%;
+    background: #fff;
+    border: 1px solid var(--mm-bordure);
+    border-radius: var(--mm-rayon);
+    padding: 1.125rem 1.25rem;
+}
+
+.mm-stat-label {
+    font-size: .8125rem;
+    color: var(--mm-texte-doux);
+    margin-bottom: .35rem;
+}
+
+.mm-stat-valeur {
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+}
+
+/* Le chiffre le plus important de la page. */
+.mm-stat-principal {
+    background: linear-gradient(135deg, var(--mm-bleu) 0%, var(--mm-bleu-fonce) 100%);
+    border: none;
+    color: #fff;
+}
+
+.mm-stat-principal .mm-stat-label {
+    color: rgba(255, 255, 255, .78);
+}
+
+.mm-badge-inactif {
+    background-color: #EEF1F8;
+    color: var(--mm-texte-doux);
+}
+
 /* ---------- Page de connexion ------------------------------------------- */
 
 .mm-login {
