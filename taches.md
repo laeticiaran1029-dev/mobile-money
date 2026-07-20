@@ -21,7 +21,11 @@
    -gains
    -comptes clients
 
-
+===================== V2 =============
+- ajout des autre operateur dans prefixes 
+- ajout des frais de transfert vers d autre operateurs 
+- ajout des commissions entre chaque operateurs
+- 
 ## Mihamintsoa 4264
 > Cote vue:
 - page de login automatique: nom, prenom, numero, bouton "Valider" [OK]
@@ -44,3 +48,22 @@
         - Implémentation de la route /effectuer-transfert. Une logique de transaction vérifie que le numéro destinataire existe bien en base et qu'il est différent de l'expéditeur. Le script procède ensuite simultanément au débit de l'expéditeur, au crédit du destinataire et insère la liaison dans l'historique avec l'idOperation = 3
 
         - Historique des transactions : /historique liée à la vue client/historique. Une requête SQL groupée (groupStart / orWhere) extrait toutes les lignes de votre table relationnelle historique_operation où l'utilisateur apparaît soit comme émetteur (idCompte), soit comme bénéficiaire (idCompteDestinataire), puis les classe de la plus récente à la plus ancienne.
+
+
+### V2
+> Retrait: inclure les frais et verfie si son solde est valide pour le retrait [ok]
+
+> Transfert:
+    - Sur la page transfert simple : - ajout de checkbox "Inclure frais de retrait". 
+                                     - Dans le controller, si elle est cochee, si c'est de meme operateur, regle de frais de la commission quand c'est cette operateur
+                                     sinon, regle de frais de la commission quand c'est ces deux autres operateurs
+            
+            > Cas 1 : Même opérateur (Yas - Interne)
+
+    - Si la case est cochée : Le client paie les frais de transfert normaux + les frais de retrait (calculés via ton barème par paliers de la table frais). Le destinataire recevra ainsi son montant "net".
+
+    - Si la case n'est pas cochée : Le client paie uniquement les frais de transfert normaux
+
+            > Cas 2 : Autres opérateurs (Yas - Interne)
+    
+  -  page transfert multiple

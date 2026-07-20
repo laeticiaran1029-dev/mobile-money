@@ -18,10 +18,10 @@ class CompteModel extends Model
     public function situation(): array
     {
         return $this->select('comptes.*,
-                              COUNT(historique_operation.idHistorique) AS nbOperations,
-                              COALESCE(SUM(historique_operation.fraisTotal), 0) AS fraisGeneres')
+                            COUNT(historique_operation.idHistorique) AS nbOperations,
+                            COALESCE(SUM(historique_operation.fraisTotal), 0) AS fraisGeneres')
                     ->join('historique_operation',
-                           'historique_operation.idCompte = comptes.idCompte', 'left')
+                        'historique_operation.idCompte = comptes.idCompte', 'left')
                     ->groupBy('comptes.idCompte')
                     ->orderBy('comptes.solde', 'DESC')
                     ->findAll();

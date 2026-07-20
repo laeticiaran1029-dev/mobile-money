@@ -16,9 +16,7 @@ class OperationModel extends Model
     public const RETRAIT   = 2;
     public const TRANSFERT = 3;
 
-    /**
-     * Libelle affichable pour un type stocke en base.
-     */
+
     public static function libelle(string $type): string
     {
         return match ($type) {

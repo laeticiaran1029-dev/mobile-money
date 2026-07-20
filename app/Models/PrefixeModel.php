@@ -9,28 +9,33 @@ class PrefixeModel extends Model
     protected $table         = 'prefixes';
     protected $primaryKey    = 'idPrefixe';
     protected $returnType    = 'array';
-    protected $allowedFields = ['valeur', 'statut'];
+    protected $allowedFields = ['valeur', 'idOperateur', 'statut'];
 
-    /**
-     * Tous les prefixes, actifs en premier.
-     */
+
     public function tous(): array
     {
-        return $this->orderBy('statut', 'DESC')
-                    ->orderBy('valeur', 'ASC')
+        return $this->select('prefixes.*, operateurs.nom AS nomOperateur')
+                    ->join('operateurs', 'operateurs.idOperateur = prefixes.idOperateur', 'left')
+                    ->orderBy('prefixes.statut', 'DESC')
+                    ->orderBy('operateurs.nom', 'ASC')
+                    ->orderBy('prefixes.valeur', 'ASC')
                     ->findAll();
     }
 
-    /**
-     * Le prefixe (3 premiers chiffres) est-il autorise a se connecter ?
-     * Utilise par l'authentification cote client.
-     */
+
     public function estActif(string $numeroTel): bool
     {
-        $prefixe = substr($numeroTel, 0, 3);
+        return $this->operateurDe($numeroTel) !== null;
+    }
 
-        return $this->where('valeur', $prefixe)
-                    ->where('statut', 1)
-                    ->countAllResults() > 0;
+
+    public function operateurDe(string $numeroTel): ?array
+    {
+        return $this->select('prefixes.idPrefixe, prefixes.valeur,
+                              operateurs.idOperateur, operateurs.nom')
+                    ->join('operateurs', 'operateurs.idOperateur = prefixes.idOperateur')
+                    ->where('prefixes.valeur', substr($numeroTel, 0, 3))
+                    ->where('prefixes.statut', 1)
+                    ->first();
     }
 }

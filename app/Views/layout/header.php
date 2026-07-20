@@ -29,11 +29,15 @@
                     <a class="nav-link" href="<?= site_url('retrait') ?>">Retrait</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="<?= site_url('transfert') ?>">Transfert</a>
+                    <a class="nav-link" href="<?= site_url('transfert') ?>">Transfert Simple</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= site_url('transfertMultiple') ?>">Transfert Multiple</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= site_url('historique') ?>">Historique</a>
                 </li>
+                
             </ul>
 
             <a class="btn btn-outline-light btn-sm" href="<?= site_url('logout') ?>">Déconnexion</a>

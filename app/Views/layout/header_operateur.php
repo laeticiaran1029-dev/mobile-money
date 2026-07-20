@@ -29,7 +29,13 @@
                     <a class="nav-link" href="<?= site_url('operateur/frais') ?>">Barèmes de frais</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="<?= site_url('operateur/commissions') ?>">Commissions</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="<?= site_url('operateur/gains') ?>">Gains</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="<?= site_url('operateur/dus') ?>">Montants dus</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="<?= site_url('operateur/comptes') ?>">Comptes clients</a>
