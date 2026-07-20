@@ -1,0 +1,7 @@
+.env
+vendor/
+writable/*.db
+writable/debugbar/*
+writable/logs/*
+writable/session/*
+writable/cache/*
