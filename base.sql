@@ -79,6 +79,13 @@ CREATE TABLE historique_operation (
     FOREIGN KEY (idOperateurDestinataire) REFERENCES operateurs(idOperateur)
 );
 
+CREATE TABLE epargne(
+    idEpargne INTEGER PRIMARY KEY AUTOINCREMENT,
+    idCompte INTEGER,
+    pourcent_epargne DECIMAL(10,2),
+    FOREIGN KEY (idCompte) REFERENCES comptes(idCompte)
+);
+
 CREATE TABLE promotion (
     idPromotion INTEGER PRIMARY KEY AUTOINCREMENT,
     idOperateur_prom INTEGER NOT NULL,
@@ -179,5 +186,5 @@ VALUES (3, 2, 3, 10000, 100);
 
 CREATE OR REPLACE VIEW promotionCalcu(
     SELECT nom from comptes join type from operation 
-    
+
 );

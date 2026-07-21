@@ -16,6 +16,11 @@ class OperationController extends BaseController
         return $this->afficher('depot', 'Dépôt');
     }
 
+    public function epargne()
+    {
+        return $this->afficher('epargne', 'epargne');
+    }
+
     public function transfertMultiple()
     {
         return $this->afficher('transfertMultiple', 'Transfert Multiple');
@@ -39,6 +44,51 @@ class OperationController extends BaseController
         return $this->afficher('promotion', 'Promotion', [
             'bareme' => (new PromotionModel())->baremeDe(OperationModel::PROMOTION),
         ]);
+    }
+
+    //    public function insererEpargne()
+    // {
+    //     $idCompte = session()->get('idCompte');
+
+    //     if (! $idCompte) {
+    //         return redirect()->to('/');
+    //     }
+
+    //     return $this->afficher('historique', 'Historique', [
+    //         'transactions' => (new HistoriqueModel())->duCompte((int) $idCompte),
+    //     ]);
+    // }
+
+      private function insererEpargne(
+        // int $idEpargne,
+        int $idCompte,
+        float $pourcent,
+    ): void {
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        // $compteModel = new CompteModel();
+        // $compteModel->update($idEmetteur, ['solde' => $soldeEmetteur]);
+
+        // if ($idDestinataire !== null && $soldeDestinataire !== null) {
+        //     $compteModel->update($idDestinataire, ['solde' => $soldeDestinataire]);
+        // }
+        $idCompte = session()->get('idCompte');
+        $pourcent = (float) $this->request->getPost('epargne');
+
+
+        // if (! $idCompte) {
+        //     return redirect()->to('/');
+        // }
+
+        (new epargneModel())->insert([
+            // 'idEpargne' => $idEmetteur,
+            'idCompte' => $idCompte,
+            'pourcent_epargne'  => $pourcent
+        ]);
+
+        $db->transComplete();
+        
     }
 
     public function historique()
@@ -508,4 +558,9 @@ class OperationController extends BaseController
 
         return redirect()->to('transfert')->with('succes',
             'Transfert de ' . $this->formater($montant) . ' Ar effectué vers le réseau ' . $opDestinataire['nom'] . '.');
+}
+
+  
+
+
 }

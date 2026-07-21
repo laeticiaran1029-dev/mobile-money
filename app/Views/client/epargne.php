@@ -1,0 +1,40 @@
+<?= $this->include('layout/header') ?>
+
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+
+        <h1 class="h4 mb-1">Epargne</h1>
+        <p class="text-muted mb-4" style="font-variant-numeric: tabular-nums;">
+            Compte <?= esc($compte['numeroTel']) ?>
+        </p>
+
+        <div class="mm-stat mm-stat-principal mb-4">
+            <div class="mm-stat-label"><i class="bi bi-wallet2 me-1"></i> Solde disponible</div>
+            <div class="mm-stat-valeur"><?= number_format($compte['solde'], 0, ',', ' ') ?> Ar</div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form action="<?= site_url('epargne') ?>" method="post">
+                    <div class="mb-3">
+                        <label for="epargne" class="form-label">Pourcentage de l'epargne voulu</label>
+                        <div class="input-group">
+                            <input type="number" name="epargne" id="epargne"
+                                   class="form-control mm-input-montant"
+                                   min="1" step="1" required placeholder="0">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">Valider le pourcentage de l'epargne</button>
+                        <a href="<?= site_url('accueil') ?>" class="btn btn-outline-primary">Retour au tableau de bord</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<?= $this->include('layout/footer') ?>

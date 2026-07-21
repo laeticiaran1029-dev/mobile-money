@@ -16,6 +16,9 @@ $routes->post('depot', 'OperationController::effectuerDepot');
 $routes->get('retrait', 'OperationController::retrait');
 $routes->post('retrait', 'OperationController::effectuerRetrait');
 $routes->get('transfert', 'OperationController::transfert');
+$routes->get('epargne', 'OperationController::epargne');
+$routes->post('epargne', 'OperationController::insererEpargne');
+
 $routes->post('transfert', 'OperationController::effectuerTransfert');
 $routes->get('historique', 'OperationController::historique');
 

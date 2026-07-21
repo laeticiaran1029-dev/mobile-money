@@ -37,6 +37,10 @@
                 <li class="nav-item">
                     <a class="nav-link" href="<?= site_url('historique') ?>">Historique</a>
                 </li>
+
+                 <li class="nav-item">
+                    <a class="nav-link" href="<?= site_url('epargne') ?>">Epargne</a>
+                </li>
                 
             </ul>
 
