@@ -32,7 +32,7 @@
                     $frais        = $estRecu
                         ? 0
                         : (float) $ligne['fraisTotal'] + (float) ($ligne['commission'] ?? 0)
-                          + (float) ($ligne['fraisRetraitInclus'] ?? 0);
+                        + (float) ($ligne['fraisRetraitInclus'] ?? 0);
 
                     // L'operateur n'a d'interet que sur un envoi : a la reception,
                     // c'est le sien.

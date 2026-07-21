@@ -2,10 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\CommissionModel;
 use App\Models\CompteModel;
 use App\Models\FraisModel;
 use App\Models\HistoriqueModel;
 use App\Models\OperationModel;
+use App\Models\PrefixeModel;
 
 class OperationController extends BaseController
 {
@@ -132,28 +134,27 @@ class OperationController extends BaseController
             return redirect()->back()->with('erreur', 'Un transfert vers son propre numéro est impossible.');
         }
 
-        $valeurPrefixe = substr($numeroTel, 0, 3);
-
         $db = \Config\Database::connect();
-        $prefixeData = $db->table('prefixes')
-            ->select('operateurs.*')
-            ->join('operateurs', 'operateurs.idOperateur = prefixes.idOperateur')
-            ->where('prefixes.valeur', $valeurPrefixe)
-            ->where('prefixes.statut', 1)
-            ->get()
-            ->getRowArray();
+        $prefixeModel = new PrefixeModel();
 
-        if ($prefixeData === null) {
+        $opDestinataire = $prefixeModel->operateurDe($numeroTel);
+        if ($opDestinataire === null) {
+            $valeurPrefixe = substr($numeroTel, 0, 3);
             return redirect()->back()->with('erreur', "L'opérateur du numéro {$valeurPrefixe} n'est pas pris en charge.");
         }
 
+        // Transfert interne = émetteur et destinataire sur le même opérateur.
+        $opEmetteur = $prefixeModel->operateurDe($compte['numeroTel']);
+        $idOperateurEmetteur = $opEmetteur !== null ? (int) $opEmetteur['idOperateur'] : 0;
+        $estInterne = $idOperateurEmetteur === (int) $opDestinataire['idOperateur'];
+
         $fraisModel = new FraisModel();
         $frais = $fraisModel->calculer(OperationModel::TRANSFERT, $montant);
-        
+
         $fraisRetraitInclus = 0;
         $commissionExterne = 0;
 
-        if ((int)$prefixeData['estInterne'] === 1) {
+        if ($estInterne) {
             
             if ($inclureFrais) {
                 $fraisRetraitInclus = $fraisModel->calculer(OperationModel::RETRAIT, $montant);
@@ -168,7 +169,8 @@ class OperationController extends BaseController
             $soldeDestinataireApres = (float)$destinataire['solde'] + $montant;
 
         } else {
-            $commissionExterne = $montant * ((float)$prefixeData['tauxCommission'] / 100);
+            $taux = (new CommissionModel())->taux($idOperateurEmetteur, (int) $opDestinataire['idOperateur']);
+            $commissionExterne = $montant * ($taux / 100);
             $frais += $commissionExterne;
 
             $idDestinataire = null;
@@ -197,7 +199,7 @@ class OperationController extends BaseController
             'montant'                => $montant,
             'fraisTotal'             => $frais,
             'numeroDestinataire'     => $numeroTel,
-            'idOperateurDestinataire'=> (int)$prefixeData['idOperateur'],
+            'idOperateurDestinataire'=> (int)$opDestinataire['idOperateur'],
             'commission'             => $commissionExterne,
             'fraisRetraitInclus'     => $fraisRetraitInclus,
         ]);
@@ -205,7 +207,7 @@ class OperationController extends BaseController
         $db->transComplete();
 
         return redirect()->to('transfert')->with('succes',
-            'Transfert de ' . $this->formater($montant) . ' Ar effectué vers le réseau ' . $prefixeData['nom'] . '.');
+            'Transfert de ' . $this->formater($montant) . ' Ar effectué vers le réseau ' . $opDestinataire['nom'] . '.');
     }
 
     public function effectuerTransfertMultiple()
@@ -245,6 +247,11 @@ class OperationController extends BaseController
         $db = \Config\Database::connect();
         $compteModel = new CompteModel();
         $fraisModel = new FraisModel();
+        $prefixeModel = new PrefixeModel();
+        $commissionModel = new CommissionModel();
+
+        $opEmetteur = $prefixeModel->operateurDe($compte['numeroTel']);
+        $idOperateurEmetteur = $opEmetteur !== null ? (int) $opEmetteur['idOperateur'] : 0;
 
         $comptesDestinatairesValides = [];
         $fraisTotalCumule = 0;
@@ -254,36 +261,30 @@ class OperationController extends BaseController
                 return redirect()->back()->with('erreur', 'Vous ne pouvez pas vous inclure dans la liste.');
             }
 
-            $valeurPrefixe = substr($numTel, 0, 3);
-
-            $prefixeData = $db->table('prefixes')
-                ->select('operateurs.*')
-                ->join('operateurs', 'operateurs.idOperateur = prefixes.idOperateur')
-                ->where('prefixes.valeur', $valeurPrefixe)
-                ->where('prefixes.statut', 1)
-                ->get()
-                ->getRowArray();
-
-            if ($prefixeData === null) {
+            $opDestinataire = $prefixeModel->operateurDe($numTel);
+            if ($opDestinataire === null) {
+                $valeurPrefixe = substr($numTel, 0, 3);
                 return redirect()->back()->with('erreur', "L'opérateur du numéro {$valeurPrefixe} n'est pas pris en charge.");
             }
+            $idOperateurDestinataire = (int) $opDestinataire['idOperateur'];
 
             $fraisUnitaire = $fraisModel->calculer(OperationModel::TRANSFERT, $montantParPersonne);
-            
+
             $idDestinataire = null;
             $soldeDestinataireApres = null;
             $commissionExterne = 0;
 
-            if ((int)$prefixeData['estInterne'] === 1) {
+            if ($idOperateurDestinataire === $idOperateurEmetteur) {
                 $dest = $compteModel->parNumero($numTel);
                 if ($dest === null) {
                     return redirect()->back()->with('erreur', "Le compte correspondant au numéro {$numTel} n'existe pas.");
                 }
                 $idDestinataire = (int)$dest['idCompte'];
                 $soldeDestinataireApres = (float)$dest['solde'] + $montantParPersonne;
-            } 
+            }
             else {
-                $commissionExterne = $montantParPersonne * ((float)$prefixeData['tauxCommission'] / 100);
+                $taux = $commissionModel->taux($idOperateurEmetteur, $idOperateurDestinataire);
+                $commissionExterne = $montantParPersonne * ($taux / 100);
                 $fraisUnitaire += $commissionExterne;
             }
 
@@ -294,7 +295,7 @@ class OperationController extends BaseController
                 'soldeDestinataireApres' => $soldeDestinataireApres,
                 'numero'                 => $numTel,
                 'frais'                  => $fraisUnitaire,
-                'idOperateur'            => (int)$prefixeData['idOperateur'],
+                'idOperateur'            => $idOperateurDestinataire,
                 'commission'             => $commissionExterne
             ];
         }

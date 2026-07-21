@@ -1,89 +1,74 @@
 <?= $this->include('layout/header') ?>
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <h2 class="card-title mb-1">Transfert Multiple</h2>
-                    <p class="text-muted small mb-4">Envoyer de l'argent depuis le compte <?= esc($compte['numeroTel']) ?></p>
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
 
-                    <?php if (session()->getFlashdata('succes')) : ?>
-                        <div class="alert alert-success"><?= session()->getFlashdata('succes') ?></div>
-                    <?php endif; ?>
-                    <?php if (session()->getFlashdata('erreur')) : ?>
-                        <div class="alert alert-danger"><?= session()->getFlashdata('erreur') ?></div>
-                    <?php endif; ?>
+        <h1 class="h4 mb-1">Retrait</h1>
+        <p class="text-muted mb-4" style="font-variant-numeric: tabular-nums;">
+            Retirer depuis le compte <?= esc($compte['numeroTel']) ?>
+        </p>
 
-                    <div class="bg-primary text-white p-3 rounded mb-4">
-                        <small class="d-block text-white-50">Solde disponible</small>
-                        <span class="fs-3 fw-bold"><?= number_format($compte['solde'], 0, ',', ' ') ?> Ar</span>
+        <div class="mm-stat mm-stat-principal mb-4">
+            <div class="mm-stat-label"><i class="bi bi-wallet2 me-1"></i> Solde disponible</div>
+            <div class="mm-stat-valeur"><?= number_format($compte['solde'], 0, ',', ' ') ?> Ar</div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form action="<?= site_url('retrait') ?>" method="post">
+                    <div class="mb-3">
+                        <label for="montant" class="form-label">Montant à retirer</label>
+                        <div class="input-group">
+                            <input type="number" name="montant" id="montant"
+                                   class="form-control mm-input-montant"
+                                   min="1" step="1" required placeholder="0">
+                            <span class="input-group-text">Ar</span>
+                        </div>
+                        <div class="form-text">
+                            Les frais du barème sont prélevés en plus du montant retiré.
+                        </div>
+
+                        
                     </div>
 
-                    <form action="<?= base_url('transfertMultiple') ?>" method="post">
-                        
-                        <div class="mb-4">
-                            <label for="montant_global" class="form-label fw-bold">Montant global à diviser</label>
-                            <div class="input-group">
-                                <input type="number" name="montant_global" id="montant_global" class="form-control form-control-lg" required min="1">
-                                <span class="input-group-text">Ar</span>
-                            </div>
-                            <small class="text-muted">Ce montant sera divisé équitablement entre chaque numéro valide saisi ci-dessous.</small>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label fw-bold d-flex justify-content-between align-items-center">
-                                Numéros des destinataires
-                                <button type="button" id="btn-ajouter" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-plus-lg"></i> Ajouter un numéro
-                                </button>
-                            </label>
-                            
-                            <div id="conteneur-numeros">
-                                <div class="input-group mb-2 ligne-numero">
-                                    <input type="text" name="numeros[]" class="form-control" placeholder="Ex: 0380000002" required>
-                                    <button type="button" class="btn btn-outline-secondary disabled"><i class="bi bi-trash"></i></button>
-                                </div>
-                            </div>
-                            <small class="text-muted small d-block mt-1">Tous réseaux autorisés. Les frais et commissions s'appliquent selon l'opérateur du destinataire.</small>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">Diviser et envoyer l'argent</button>
-                            <a href="<?= base_url('transfert') ?>" class="btn btn-link text-decoration-none text-muted">Retour au transfert simple</a>
-                        </div>
-                    </form>
-
-                </div>
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">Confirmer le retrait</button>
+                        <a href="<?= site_url('accueil') ?>" class="btn btn-outline-primary">Retour au tableau de bord</a>
+                    </div>
+                </form>
             </div>
         </div>
+
+        <?php if (! empty($bareme)) : ?>
+            <details class="mm-bareme mt-3">
+                <summary>
+                    <i class="bi bi-info-circle me-1"></i> Voir le barème des frais
+                </summary>
+                <table class="table table-sm mt-3 mb-0">
+                    <thead>
+                        <tr>
+                            <th>Montant</th>
+                            <th class="mm-col-montant">Frais</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($bareme as $tranche) : ?>
+                        <tr>
+                            <td class="mm-col-tranche">
+                                <?= number_format($tranche['montantMin'], 0, ',', ' ') ?>
+                                à <?= number_format($tranche['montantMax'], 0, ',', ' ') ?> Ar
+                            </td>
+                            <td class="mm-col-montant">
+                                <?= number_format($tranche['frais'], 0, ',', ' ') ?> Ar
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                    </tbody>
+                </table>
+            </details>
+        <?php endif ?>
+
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const conteneur = document.getElementById('conteneur-numeros');
-    const btnAjouter = document.getElementById('btn-ajouter');
-
-    btnAjouter.addEventListener('click', function() {
-        const nouvelleLigne = document.createElement('div');
-        nouvelleLigne.className = 'input-group mb-2 ligne-numero';
-        nouvelleLigne.innerHTML = `
-            <input type="text" name="numeros[]" class="form-control" placeholder="Ex: 0380000002" required>
-            <button type="button" class="btn btn-outline-danger btn-supprimer"><i class="bi bi-trash"></i> Supprimer</button>
-        `;
-        conteneur.appendChild(nouvelleLigne);
-    });
-
-    conteneur.addEventListener('click', function(e) {
-        if (e.target.classList.contains('btn-supprimer') || e.target.closest('.btn-supprimer')) {
-            const ligne = e.target.closest('.ligne-numero');
-            if (ligne) {
-                ligne.remove();
-            }
-        }
-    });
-});
-</script>
 
 <?= $this->include('layout/footer') ?>
