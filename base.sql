@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS prefixes;
 DROP TABLE IF EXISTS operateurs;
 DROP TABLE IF EXISTS comptes;
 DROP TABLE IF EXISTS operation;
+DROP TABLE IF EXISTS promotion;
 
 -- 2. Création des tables parentes (indépendantes)
 CREATE TABLE operateurs (
@@ -78,6 +79,14 @@ CREATE TABLE historique_operation (
     FOREIGN KEY (idOperateurDestinataire) REFERENCES operateurs(idOperateur)
 );
 
+CREATE TABLE promotion (
+    idPromotion INTEGER PRIMARY KEY AUTOINCREMENT,
+    idOperateur_prom INTEGER NOT NULL,
+    nomOperateur  VARCHAR(50) NOT NULL UNIQUE,
+    fraisPromo REAL NOT NULL,
+    FOREIGN KEY (idOperateur_prom) REFERENCES operateurs(idOperateur),
+    FOREIGN KEY (nomOperateur) REFERENCES operateurs(nom)
+);
 -- 4. Insertion des données (Seed)
 INSERT INTO operateurs (nom) VALUES
 ('Yas'),
@@ -167,3 +176,8 @@ VALUES (1, NULL, 2, 15000, 200);
 
 INSERT INTO historique_operation (idCompte, idCompteDestinataire, idOperation, montant, fraisTotal)
 VALUES (3, 2, 3, 10000, 100);
+
+CREATE OR REPLACE VIEW promotionCalcu(
+    SELECT nom from comptes join type from operation 
+    
+);
