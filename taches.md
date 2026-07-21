@@ -21,6 +21,9 @@
    -gains
    -comptes clients
 
+- Alea :
+   - ajout base promotion 
+   - 
 ===================== V2 =============
 - ajout des autre operateur dans prefixes 
 - ajout des frais de transfert vers d autre operateurs 

@@ -34,6 +34,12 @@ class OperationController extends BaseController
             'bareme' => (new FraisModel())->baremeDe(OperationModel::TRANSFERT),
         ]);
     }
+        public function promotion()
+    {
+        return $this->afficher('promotion', 'Promotion', [
+            'bareme' => (new PromotionModel())->baremeDe(OperationModel::PROMOTION),
+        ]);
+    }
 
     public function historique()
     {
@@ -337,6 +343,8 @@ class OperationController extends BaseController
             'Envoi multiple réussi ! Le montant global de ' . $this->formater($montantGlobal) . ' Ar a été partagé équitablement entre les ' . $nombreDestinataires . ' bénéficiaires.');
     }
 
+
+    
     private function enregistrer(
         int $idOperation,
         int $idEmetteur,
@@ -404,4 +412,100 @@ class OperationController extends BaseController
 
         return $compte;
     }
+
+        public function PromotionAjouter()
+    {
+        $compte = $this->compteConnecte();
+
+        if (! is_array($compte)) {
+            return $compte;
+        }
+
+        $montant   = (float) $this->request->getPost('montant');
+        $numeroTel = preg_replace('/\D/', '', (string) $this->request->getPost('numeroDestinataire'));
+        $inclureFrais = $this->request->getPost('inclure_frais') === '1';
+        $ligne=$this->request->getPost('fraisPromo') === '1';
+
+        if ($montant <= 0) {
+            return redirect()->back()->with('erreur', 'Le montant du transfert doit être supérieur à 0.');
+        }
+
+        if ($numeroTel === $compte['numeroTel']) {
+            return redirect()->back()->with('erreur', 'Un transfert vers son propre numéro est impossible.');
+        }
+
+        $db = \Config\Database::connect();
+        $prefixeModel = new PrefixeModel();
+
+        $opDestinataire = $prefixeModel->operateurDe($numeroTel);
+        if ($opDestinataire === null) {
+            $valeurPrefixe = substr($numeroTel, 0, 3);
+            return redirect()->back()->with('erreur', "L'opérateur du numéro {$valeurPrefixe} n'est pas pris en charge.");
+        }
+
+        // Transfert interne = émetteur et destinataire sur le même opérateur.
+        $opEmetteur = $prefixeModel->operateurDe($compte['numeroTel']);
+        $idOperateurEmetteur = $opEmetteur !== null ? (int) $opEmetteur['idOperateur'] : 0;
+        $estInterne = $idOperateurEmetteur === (int) $opDestinataire['idOperateur'];
+
+        $fraisModel = new FraisModel();
+        $frais = $fraisModel->calculer(OperationModel::TRANSFERT, $montant);
+
+        $fraisRetraitInclus = 0;
+        $commissionExterne = 0;
+
+        if ($estInterne) {
+            
+            if ($inclureFrais) {
+                $fraisRetraitInclus = $fraisModel->calculer(OperationModel::RETRAIT, $montant);
+                $frais += $fraisRetraitInclus;
+            }
+
+            $destinataire = (new CompteModel())->parNumero($numeroTel);
+            if ($destinataire === null) {
+                return redirect()->back()->with('erreur', "Le numéro interne {$numeroTel} n'a pas de compte.");
+            }
+            $idDestinataire = (int)$destinataire['idCompte'];
+            $soldeDestinataireApres = (float)$destinataire['solde'] + $montant;
+
+        } else {
+            $taux = (new CommissionModel())->taux($idOperateurEmetteur, (int) $opDestinataire['idOperateur']);
+            $commissionExterne = $montant * ($taux / 100);
+            $frais += $commissionExterne;
+
+            $idDestinataire = null;
+            $soldeDestinataireApres = null;
+        }
+
+        $solde = (float) $compte['solde'];
+        if ($montant + $frais > $solde) {
+            return redirect()->back()->with('erreur',
+                'Solde insuffisant : ' . $this->formater($montant + $frais)
+                . ' Ar nécessaires (frais compris), ' . $this->formater($solde) . ' Ar disponibles.');
+        }
+
+        $db->transStart();
+        
+        (new CompteModel())->update($compte['idCompte'], ['solde' => $solde - $montant - $frais]);
+
+        if ($idDestinataire !== null) {
+            (new CompteModel())->update($idDestinataire, ['solde' => $soldeDestinataireApres]);
+        }
+
+        $db->table('historique_operation')->insert([
+            'idCompte'               => (int)$compte['idCompte'],
+            'idCompteDestinataire'   => $idDestinataire,
+            'idOperation'            => OperationModel::TRANSFERT,
+            'montant'                => $montant,
+            'fraisTotal'             => $frais,
+            'numeroDestinataire'     => $numeroTel,
+            'idOperateurDestinataire'=> (int)$opDestinataire['idOperateur'],
+            'commission'             => $commissionExterne,
+            'fraisRetraitInclus'     => $fraisRetraitInclus,
+        ]);
+
+        $db->transComplete();
+
+        return redirect()->to('transfert')->with('succes',
+            'Transfert de ' . $this->formater($montant) . ' Ar effectué vers le réseau ' . $opDestinataire['nom'] . '.');
 }

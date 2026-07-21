@@ -16,3 +16,7 @@ SQLite, fichier `writable/mobileMoney.db`, à créer depuis `base.sql` :
 sqlite3 writable/mobileMoney.db < base.sql
 ```
 ### mdp operateur :admin2024
+
+git add .
+git commit -m "Mise a jour du projet sur la branche dev"
+git push origin dev
