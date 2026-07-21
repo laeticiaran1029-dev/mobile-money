@@ -36,6 +36,13 @@
                         <div class="form-text">
                             Les frais sont à votre charge : le destinataire reçoit le montant entier.
                         </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" name="inclureFrais" id="inclure_frais" value="1">
+                            <label class="form-check-label" for="inclure_frais">
+                                Inclure les frais de retrait
+                            </label>
+                        </div>
                     </div>
 
                     <div class="d-grid gap-2 mt-4">

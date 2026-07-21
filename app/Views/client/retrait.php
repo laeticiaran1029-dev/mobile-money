@@ -27,6 +27,8 @@
                         <div class="form-text">
                             Les frais du barème sont prélevés en plus du montant retiré.
                         </div>
+
+                        
                     </div>
 
                     <div class="d-grid gap-2 mt-4">

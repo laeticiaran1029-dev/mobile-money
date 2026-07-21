@@ -26,9 +26,17 @@
                     $estRecu   = (int) ($ligne['idCompteDestinataire'] ?? 0) === (int) $compte['idCompte'];
                     $estCredit = $ligne['type'] === 'depot' || $estRecu;
 
-                    // Les frais d'un transfert sont a la charge de l'emetteur seul.
+                    // Les frais d'un transfert sont a la charge de l'emetteur seul,
+                    // commission inter-operateurs comprise.
                     $contrepartie = $estRecu ? $ligne['telEmetteur'] : ($ligne['telDestinataire'] ?? null);
-                    $frais        = $estRecu ? 0 : (float) $ligne['fraisTotal'];
+                    $frais        = $estRecu
+                        ? 0
+                        : (float) $ligne['fraisTotal'] + (float) ($ligne['commission'] ?? 0)
+                        + (float) ($ligne['fraisRetraitInclus'] ?? 0);
+
+                    // L'operateur n'a d'interet que sur un envoi : a la reception,
+                    // c'est le sien.
+                    $operateur = $estRecu ? null : ($ligne['operateurDestinataire'] ?? null);
                 ?>
                 <tr>
                     <td><?= esc(date('d/m/Y H:i', strtotime($ligne['dateTransaction']))) ?></td>
@@ -42,6 +50,9 @@
                     </td>
                     <td style="font-variant-numeric: tabular-nums;">
                         <?= esc($contrepartie ?? '—') ?>
+                        <?php if ($operateur !== null) : ?>
+                            <span class="text-muted small ms-1"><?= esc($operateur) ?></span>
+                        <?php endif ?>
                     </td>
                     <td class="mm-col-montant <?= $estCredit ? 'mm-credit' : 'mm-debit' ?>">
                         <?= $estCredit ? '+' : '−' ?><?= number_format($ligne['montant'], 0, ',', ' ') ?> Ar

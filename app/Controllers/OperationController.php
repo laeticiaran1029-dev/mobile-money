@@ -2,16 +2,23 @@
 
 namespace App\Controllers;
 
+use App\Models\CommissionModel;
 use App\Models\CompteModel;
 use App\Models\FraisModel;
 use App\Models\HistoriqueModel;
 use App\Models\OperationModel;
+use App\Models\PrefixeModel;
 
 class OperationController extends BaseController
 {
     public function depot()
     {
         return $this->afficher('depot', 'Dépôt');
+    }
+
+    public function transfertMultiple()
+    {
+        return $this->afficher('transfertMultiple', 'Transfert Multiple');
     }
 
     public function retrait()
@@ -41,9 +48,6 @@ class OperationController extends BaseController
         ]);
     }
 
-    /**
-     * Depot : credite le compte, sans frais.
-     */
     public function effectuerDepot()
     {
         $compte = $this->compteConnecte();
@@ -72,9 +76,6 @@ class OperationController extends BaseController
             'Dépôt de ' . $this->formater($montant) . ' Ar effectué.');
     }
 
-    /**
-     * Retrait : debite le montant et les frais de la tranche correspondante.
-     */
     public function effectuerRetrait()
     {
         $compte = $this->compteConnecte();
@@ -113,10 +114,6 @@ class OperationController extends BaseController
             . ($frais > 0 ? ' (frais : ' . $this->formater($frais) . ' Ar).' : '.'));
     }
 
-    /**
-     * Transfert : l'emetteur paie montant + frais, le destinataire recoit le
-     * montant nominal. Les deux ecritures sont dans la meme transaction.
-     */
     public function effectuerTransfert()
     {
         $compte = $this->compteConnecte();
@@ -127,6 +124,7 @@ class OperationController extends BaseController
 
         $montant   = (float) $this->request->getPost('montant');
         $numeroTel = preg_replace('/\D/', '', (string) $this->request->getPost('numeroDestinataire'));
+        $inclureFrais = $this->request->getPost('inclure_frais') === '1';
 
         if ($montant <= 0) {
             return redirect()->back()->with('erreur', 'Le montant du transfert doit être supérieur à 0.');
@@ -136,41 +134,209 @@ class OperationController extends BaseController
             return redirect()->back()->with('erreur', 'Un transfert vers son propre numéro est impossible.');
         }
 
-        $destinataire = (new CompteModel())->parNumero($numeroTel);
+        $db = \Config\Database::connect();
+        $prefixeModel = new PrefixeModel();
 
-        if ($destinataire === null) {
-            return redirect()->back()->with('erreur', "Le numéro {$numeroTel} n'a pas de compte.");
+        $opDestinataire = $prefixeModel->operateurDe($numeroTel);
+        if ($opDestinataire === null) {
+            $valeurPrefixe = substr($numeroTel, 0, 3);
+            return redirect()->back()->with('erreur', "L'opérateur du numéro {$valeurPrefixe} n'est pas pris en charge.");
         }
 
-        $frais = (new FraisModel())->calculer(OperationModel::TRANSFERT, $montant);
-        $solde = (float) $compte['solde'];
+        // Transfert interne = émetteur et destinataire sur le même opérateur.
+        $opEmetteur = $prefixeModel->operateurDe($compte['numeroTel']);
+        $idOperateurEmetteur = $opEmetteur !== null ? (int) $opEmetteur['idOperateur'] : 0;
+        $estInterne = $idOperateurEmetteur === (int) $opDestinataire['idOperateur'];
 
+        $fraisModel = new FraisModel();
+        $frais = $fraisModel->calculer(OperationModel::TRANSFERT, $montant);
+
+        $fraisRetraitInclus = 0;
+        $commissionExterne = 0;
+
+        if ($estInterne) {
+            
+            if ($inclureFrais) {
+                $fraisRetraitInclus = $fraisModel->calculer(OperationModel::RETRAIT, $montant);
+                $frais += $fraisRetraitInclus;
+            }
+
+            $destinataire = (new CompteModel())->parNumero($numeroTel);
+            if ($destinataire === null) {
+                return redirect()->back()->with('erreur', "Le numéro interne {$numeroTel} n'a pas de compte.");
+            }
+            $idDestinataire = (int)$destinataire['idCompte'];
+            $soldeDestinataireApres = (float)$destinataire['solde'] + $montant;
+
+        } else {
+            $taux = (new CommissionModel())->taux($idOperateurEmetteur, (int) $opDestinataire['idOperateur']);
+            $commissionExterne = $montant * ($taux / 100);
+            $frais += $commissionExterne;
+
+            $idDestinataire = null;
+            $soldeDestinataireApres = null;
+        }
+
+        $solde = (float) $compte['solde'];
         if ($montant + $frais > $solde) {
             return redirect()->back()->with('erreur',
                 'Solde insuffisant : ' . $this->formater($montant + $frais)
                 . ' Ar nécessaires (frais compris), ' . $this->formater($solde) . ' Ar disponibles.');
         }
 
-        $this->enregistrer(
-            OperationModel::TRANSFERT,
-            (int) $compte['idCompte'],
-            (int) $destinataire['idCompte'],
-            $montant,
-            $frais,
-            $solde - $montant - $frais,
-            (float) $destinataire['solde'] + $montant
-        );
+        $db->transStart();
+        
+        (new CompteModel())->update($compte['idCompte'], ['solde' => $solde - $montant - $frais]);
+
+        if ($idDestinataire !== null) {
+            (new CompteModel())->update($idDestinataire, ['solde' => $soldeDestinataireApres]);
+        }
+
+        $db->table('historique_operation')->insert([
+            'idCompte'               => (int)$compte['idCompte'],
+            'idCompteDestinataire'   => $idDestinataire,
+            'idOperation'            => OperationModel::TRANSFERT,
+            'montant'                => $montant,
+            'fraisTotal'             => $frais,
+            'numeroDestinataire'     => $numeroTel,
+            'idOperateurDestinataire'=> (int)$opDestinataire['idOperateur'],
+            'commission'             => $commissionExterne,
+            'fraisRetraitInclus'     => $fraisRetraitInclus,
+        ]);
+
+        $db->transComplete();
 
         return redirect()->to('transfert')->with('succes',
-            $this->formater($montant) . ' Ar envoyés à '
-            . $destinataire['prenom'] . ' ' . $destinataire['nom'] . '.');
+            'Transfert de ' . $this->formater($montant) . ' Ar effectué vers le réseau ' . $opDestinataire['nom'] . '.');
     }
 
-    /**
-     * Ecrit les nouveaux soldes et la ligne d'historique en une seule
-     * transaction : un plantage entre le debit et le credit ferait
-     * autrement disparaitre de l'argent.
-     */
+    public function effectuerTransfertMultiple()
+    {
+        $compte = $this->compteConnecte();
+        if (! is_array($compte)) {
+            return $compte;
+        }
+
+        $montantGlobal = (float) $this->request->getPost('montant_global');
+        $listeNumerosRaw = $this->request->getPost('numeros');
+
+        if ($montantGlobal <= 0) {
+            return redirect()->back()->with('erreur', 'Le montant global doit être supérieur à 0.');
+        }
+
+        if (empty($listeNumerosRaw) || !is_array($listeNumerosRaw)) {
+            return redirect()->back()->with('erreur', 'Veuillez saisir au moins un numéro de téléphone.');
+        }
+
+        $numerosDestinataires = [];
+        foreach ($listeNumerosRaw as $num) {
+            $nettoye = preg_replace('/\D/', '', (string)$num);
+            if (!empty($nettoye)) {
+                $numerosDestinataires[] = $nettoye;
+            }
+        }
+        $numerosDestinataires = array_unique($numerosDestinataires);
+        $nombreDestinataires = count($numerosDestinataires);
+
+        if ($nombreDestinataires === 0) {
+            return redirect()->back()->with('erreur', 'Aucun numéro de téléphone valide n\'a été fourni.');
+        }
+
+        $montantParPersonne = $montantGlobal / $nombreDestinataires;
+
+        $db = \Config\Database::connect();
+        $compteModel = new CompteModel();
+        $fraisModel = new FraisModel();
+        $prefixeModel = new PrefixeModel();
+        $commissionModel = new CommissionModel();
+
+        $opEmetteur = $prefixeModel->operateurDe($compte['numeroTel']);
+        $idOperateurEmetteur = $opEmetteur !== null ? (int) $opEmetteur['idOperateur'] : 0;
+
+        $comptesDestinatairesValides = [];
+        $fraisTotalCumule = 0;
+
+        foreach ($numerosDestinataires as $numTel) {
+            if ($numTel === $compte['numeroTel']) {
+                return redirect()->back()->with('erreur', 'Vous ne pouvez pas vous inclure dans la liste.');
+            }
+
+            $opDestinataire = $prefixeModel->operateurDe($numTel);
+            if ($opDestinataire === null) {
+                $valeurPrefixe = substr($numTel, 0, 3);
+                return redirect()->back()->with('erreur', "L'opérateur du numéro {$valeurPrefixe} n'est pas pris en charge.");
+            }
+            $idOperateurDestinataire = (int) $opDestinataire['idOperateur'];
+
+            $fraisUnitaire = $fraisModel->calculer(OperationModel::TRANSFERT, $montantParPersonne);
+
+            $idDestinataire = null;
+            $soldeDestinataireApres = null;
+            $commissionExterne = 0;
+
+            if ($idOperateurDestinataire === $idOperateurEmetteur) {
+                $dest = $compteModel->parNumero($numTel);
+                if ($dest === null) {
+                    return redirect()->back()->with('erreur', "Le compte correspondant au numéro {$numTel} n'existe pas.");
+                }
+                $idDestinataire = (int)$dest['idCompte'];
+                $soldeDestinataireApres = (float)$dest['solde'] + $montantParPersonne;
+            }
+            else {
+                $taux = $commissionModel->taux($idOperateurEmetteur, $idOperateurDestinataire);
+                $commissionExterne = $montantParPersonne * ($taux / 100);
+                $fraisUnitaire += $commissionExterne;
+            }
+
+            $fraisTotalCumule += $fraisUnitaire;
+
+            $comptesDestinatairesValides[] = [
+                'idCompteDestinataire'   => $idDestinataire,
+                'soldeDestinataireApres' => $soldeDestinataireApres,
+                'numero'                 => $numTel,
+                'frais'                  => $fraisUnitaire,
+                'idOperateur'            => $idOperateurDestinataire,
+                'commission'             => $commissionExterne
+            ];
+        }
+
+        $soldeEmetteur = (float) $compte['solde'];
+        $coutTotalOperation = $montantGlobal + $fraisTotalCumule;
+
+        if ($coutTotalOperation > $soldeEmetteur) {
+            return redirect()->back()->with('erreur',
+                'Solde insuffisant : ' . $this->formater($coutTotalOperation)
+                . ' Ar requis (frais et commissions inclus), ' . $this->formater($soldeEmetteur) . ' Ar disponibles.');
+        }
+
+        $db->transStart();
+
+        $compteModel->update($compte['idCompte'], ['solde' => $soldeEmetteur - $coutTotalOperation]);
+
+        foreach ($comptesDestinatairesValides as $item) {
+            if ($item['idCompteDestinataire'] !== null) {
+                $compteModel->update($item['idCompteDestinataire'], ['solde' => $item['soldeDestinataireApres']]);
+            }
+
+            $db->table('historique_operation')->insert([
+                'idCompte'               => (int)$compte['idCompte'],
+                'idCompteDestinataire'   => $item['idCompteDestinataire'],
+                'idOperation'            => OperationModel::TRANSFERT,
+                'montant'                => $montantParPersonne,
+                'fraisTotal'             => $item['frais'],
+                'numeroDestinataire'     => $item['numero'],
+                'idOperateurDestinataire'=> $item['idOperateur'],
+                'commission'             => $item['commission'],
+                'fraisRetraitInclus'     => 0,
+            ]);
+        }
+
+        $db->transComplete();
+
+        return redirect()->to('transfertMultiple')->with('succes',
+            'Envoi multiple réussi ! Le montant global de ' . $this->formater($montantGlobal) . ' Ar a été partagé équitablement entre les ' . $nombreDestinataires . ' bénéficiaires.');
+    }
+
     private function enregistrer(
         int $idOperation,
         int $idEmetteur,
@@ -201,34 +367,6 @@ class OperationController extends BaseController
         $db->transComplete();
     }
 
-    /**
-     * Compte de la session, ou la redirection a renvoyer si elle est invalide.
-     *
-     * @return array|\CodeIgniter\HTTP\RedirectResponse
-     */
-    private function compteConnecte()
-    {
-        $idCompte = session()->get('idCompte');
-
-        if (! $idCompte) {
-            return redirect()->to('/');
-        }
-
-        $compte = (new CompteModel())->find($idCompte);
-
-        if (! $compte) {
-            session()->destroy();
-
-            return redirect()->to('/');
-        }
-
-        return $compte;
-    }
-
-    /**
-     * Controle la session puis affiche la vue demandee.
-     * Evite de repeter le meme garde dans chaque methode.
-     */
     private function afficher(string $vue, string $titre, array $donnees = [])
     {
         $compte = $this->compteConnecte();
@@ -246,5 +384,24 @@ class OperationController extends BaseController
     private function formater(float $montant): string
     {
         return number_format($montant, 0, ',', ' ');
+    }
+
+    private function compteConnecte()
+    {
+        $idCompte = session()->get('idCompte');
+
+        if (! $idCompte) {
+            return redirect()->to('/');
+        }
+
+        $compte = (new CompteModel())->find($idCompte);
+
+        if (! $compte) {
+            session()->destroy();
+
+            return redirect()->to('/');
+        }
+
+        return $compte;
     }
 }

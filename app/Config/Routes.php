@@ -19,7 +19,9 @@ $routes->get('transfert', 'OperationController::transfert');
 $routes->post('transfert', 'OperationController::effectuerTransfert');
 $routes->get('historique', 'OperationController::historique');
 
-
+// Routes pour le Transfert Multiple
+$routes->get('transfertMultiple', 'OperationController::transfertMultiple');
+$routes->post('transfertMultiple', 'OperationController::effectuerTransfertMultiple');
 
 $routes->get('operateur/connexion', 'OperateurAuthController::connexion');
 $routes->post('operateur/connexion', 'OperateurAuthController::traiter');
@@ -37,15 +39,15 @@ $routes->group('operateur', ['filter' => 'operateur'], static function ($routes)
     $routes->post('frais/ajouter', 'OperateurController::ajouterFrais');
     $routes->post('frais/modifier/(:num)', 'OperateurController::modifierFrais/$1');
     $routes->post('frais/supprimer/(:num)', 'OperateurController::supprimerFrais/$1');
+    $routes->post('frais/commission', 'OperateurController::modifierCommission');
+
+    $routes->get('commissions', 'OperateurController::commissions');
+    $routes->post('commissions/modifier', 'OperateurController::modifierCommission');
 
     $routes->get('gains', 'OperateurController::gains');
+    $routes->get('dus', 'OperateurController::montantsDus');
     $routes->get('comptes', 'OperateurController::comptes');
 });
-
-// $routes->get('faketest', static function () {
-//     session()->set('idCompte', 1);
-//     return redirect()->to('accueil');
-// });
 
 
 

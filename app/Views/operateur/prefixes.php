@@ -13,6 +13,7 @@
                 <thead>
                     <tr>
                         <th>Préfixe</th>
+                        <th>Opérateur</th>
                         <th>État</th>
                         <th class="text-end">Action</th>
                     </tr>
@@ -21,6 +22,7 @@
                 <?php foreach ($prefixes as $prefixe) : ?>
                     <tr>
                         <td class="fw-semibold fs-5"><?= esc($prefixe['valeur']) ?></td>
+                        <td><?= esc($prefixe['nomOperateur'] ?? '—') ?></td>
                         <td>
                             <?php if ((int) $prefixe['statut'] === 1) : ?>
                                 <span class="mm-badge mm-badge-depot">Actif</span>
@@ -54,6 +56,19 @@
                         <input class="form-control" type="text" id="valeur" name="valeur"
                             maxlength="3" pattern="\d{3}" placeholder="033" required>
                         <div class="form-text">Exactement 3 chiffres.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="idOperateur">Opérateur</label>
+                        <select class="form-select" id="idOperateur" name="idOperateur" required>
+                        <?php foreach ($operateurs as $operateur) : ?>
+                            <option value="<?= (int) $operateur['idOperateur'] ?>">
+                                <?= esc($operateur['nom']) ?>
+                            </option>
+                        <?php endforeach ?>
+                        </select>
+                        <div class="form-text">
+                            Détermine le barème appliqué aux numéros de ce préfixe.
+                        </div>
                     </div>
                     <button class="btn btn-primary w-100">Ajouter</button>
                 </form>
